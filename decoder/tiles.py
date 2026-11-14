@@ -7,7 +7,7 @@ from encoder.tiles import tile_points
 from config import TILE_ECC_BYTES, TILE_PAIR_OFFSET
 
 
-def _read(gray, scale=1.):
+def _read(gray, scale=1., minimum_signal=4.):
     points=(np.asarray(tile_points())-.5)*scale+.5
     y=np.rint(points[:,1]*599).astype(int)
     left=np.rint((points[:,0]-TILE_PAIR_OFFSET)*599).astype(int)
@@ -19,14 +19,14 @@ def _read(gray, scale=1.):
             payload,_,errors=RSCodec(TILE_ECC_BYTES).decode(np.packbits(scores>0).tobytes())
         except (ReedSolomonError,ValueError):
             continue
-        if len(payload)==8 and zlib.crc32(payload[:4])==int.from_bytes(payload[4:],'big') and np.mean(np.abs(scores))>4:
+        if len(payload)==8 and zlib.crc32(payload[:4])==int.from_bytes(payload[4:],'big') and np.mean(np.abs(scores))>minimum_signal:
             # Agreement describes reconstructed code symbols, not identity probability.
             expected=np.unpackbits(np.frombuffer(bytes(RSCodec(TILE_ECC_BYTES).encode(payload)),np.uint8))
             agreement=float(np.mean((scores>0)==expected))
             return int.from_bytes(payload[:4],'big'),agreement,len(errors)
     if scale == 1.:
         for alternative in (.99,1.01,.98,1.02):
-            result=_read(gray,alternative)
+            result=_read(gray,alternative,minimum_signal)
             if result:return result
     return None
 
@@ -37,7 +37,25 @@ def decode_tiles(image):
     if factor<1:
         image=cv2.resize(image,None,fx=factor,fy=factor,interpolation=cv2.INTER_AREA)
     gray=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
-    edges=((image[:,:,1].astype(float)-image[:,:,2]>30) & (image[:,:,0].astype(float)-image[:,:,2]>30)).astype(np.uint8)*255
+    b,g,r=cv2.split(image.astype(np.float32))
+    # Yellow ink absorbs blue while neutral paper and black text affect all
+    # channels together. Work in chroma so pale marks remain measurable.
+    yellow=np.minimum(r,g)-b
+    background=cv2.GaussianBlur(yellow,(0,0),18)
+    yellow=np.maximum(yellow-background,0)
+    # Threshold calibrated in 8-bit camera channel units; never scale a
+    # noise-only image to full contrast.
+    yellow_mask=(yellow>5).astype(np.uint8)*255
+    cyan_mask=((g-r>30)&(b-r>30)).astype(np.uint8)*255
+    modes=((yellow_mask, np.clip(255-yellow*5,0,255).astype(np.uint8), 6.),
+           (cyan_mask,gray,4.))
+    for mask,signal,minimum in modes:
+        result=_find_tiles(mask,signal,minimum)
+        if result is not None:return result
+    return None
+
+
+def _find_tiles(edges, gray, minimum_signal):
     edges=cv2.morphologyEx(edges,cv2.MORPH_CLOSE,np.ones((3,3),np.uint8))
     contours,_=cv2.findContours(edges,cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)
     seen=[]
@@ -52,11 +70,10 @@ def decode_tiles(image):
         if any(np.linalg.norm(center-c)<5 and abs(area-a)/area<.1 for c,a in seen): continue
         seen.append((center,area))
         if len(seen)>80: break
-        # Contour ordering remains cyclic under arbitrary rotation/perspective.
         for reflected in (False,True):
             ordered=pts[::-1] if reflected else pts
             for rotation in range(4):
                 warp=cv2.warpPerspective(gray,cv2.getPerspectiveTransform(np.roll(ordered,rotation,axis=0),dst),(600,600))
-                result=_read(warp)
-                if result: return result
+                result=_read(warp,minimum_signal=minimum_signal)
+                if result:return result
     return None

@@ -17,9 +17,9 @@ Uploads are limited to 20 MB per request and 50 pages. Password-protected PDFs m
 
 ## Reliability and limits
 
-This is an experimental prototype, not a production security system. Physical print and phone-photo recovery has **not** been validated. The new color format repeats complete error-corrected payloads across each page with cyan registration boundaries. It can locate surviving patches without a page outline. At least one complete readable patch must remain; arbitrary tiny crops cannot be recovered. Select **Monochrome printer** for the earlier grayscale format, which requires a full-page scan. Cropping, low resolution, poor lighting, page content, printer characteristics or paper can prevent recovery. Signal agreement measures consistency of repeated marks; it is not a probability that an identification is correct.
+This is an experimental prototype, not a production security system. Physical print and phone-photo recovery has **not** been validated. The new color format repeats complete error-corrected payloads across each page with pale-yellow registration boundaries. It can locate surviving patches without a page outline. At least one complete readable patch must remain; arbitrary tiny crops cannot be recovered. Select **Monochrome printer** for the earlier grayscale format, which requires a full-page scan. Cropping, low resolution, poor lighting, page content, printer characteristics or paper can prevent recovery. Signal agreement measures consistency of repeated marks; it is not a probability that an identification is correct.
 
-The repeated patch boundaries and marks are visible; stealth and print robustness require real-world tuning. Retyping or recreating a document removes the marks. The prototype is not resistant to copy comparison, and its deterministic seed is public. See [the language spec](spec/LANGUAGE.md) and [synthetic evaluation](eval/README.md).
+Both dots and registration strokes use yellow at 10% opacity. This reduces their brightness contrast, but human visibility and physical print robustness still require measurement. Retyping or recreating a document removes the marks. The prototype is not resistant to copy comparison, and its deterministic seed is public. See [the language spec](spec/LANGUAGE.md) and [synthetic evaluation](eval/README.md).
 
 ## Tests and synthetic evaluation
 

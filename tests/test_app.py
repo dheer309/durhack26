@@ -106,7 +106,10 @@ def test_empty_photo_is_rejected(tmp_path, monkeypatch):
     assert 'Could not read' in response.json['error']
 
 
-def test_dark_page_rejected_without_creating_recipient(tmp_path, monkeypatch):
+def test_verification_failure_does_not_create_recipient(tmp_path, monkeypatch):
+    def reject(*args):
+        raise ValueError("Could not reliably watermark page 1.")
+    monkeypatch.setattr(server, "verify_pdf", reject)
     monkeypatch.setattr(server, 'DB', tmp_path / 'test.db')
     doc = pymupdf.open()
     page = doc.new_page(width=595, height=842)

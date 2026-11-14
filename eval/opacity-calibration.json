@@ -1,0 +1,25 @@
+{
+  "note": "Calibration IDs are test IDs, not recipient database records. Physical measurements not yet performed.",
+  "pages": [
+    {
+      "page": 1,
+      "opacity": 0.05,
+      "identifier": "CA110000"
+    },
+    {
+      "page": 2,
+      "opacity": 0.08,
+      "identifier": "CA110001"
+    },
+    {
+      "page": 3,
+      "opacity": 0.1,
+      "identifier": "CA110002"
+    },
+    {
+      "page": 4,
+      "opacity": 0.15,
+      "identifier": "CA110003"
+    }
+  ]
+}

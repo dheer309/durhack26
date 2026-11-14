@@ -1,6 +1,6 @@
 # Physical language, version 3
 
-New color copies repeat the complete ID, CRC-32 and 24 Reed–Solomon parity bytes in each of 12 independent patches. Cyan rectangular registration boundaries permit local rectification without page edges; the payload uses jittered paired-dot positions. A complete readable patch is required. Tests cover crops, rotation and mild perspective, but physical printing is unverified. The visible patch boundaries are a functional tradeoff from the original organic, faint-mark brief. Monochrome mode generates version 2 and requires full-page registration.
+New color copies repeat the complete ID, CRC-32 and 24 Reed–Solomon parity bytes in each of 12 independent patches. Pale-yellow rectangular registration boundaries permit local rectification without page edges; the payload uses jittered paired-dot positions. A complete readable patch is required. Tests cover crops, rotation and mild perspective, but physical printing is unverified. The rectangular boundaries remain a functional tradeoff from the original organic brief; both dots and strokes are now rendered in yellow at 10% opacity. The decoder extracts yellow chroma against a local background, while retaining the old cyan reader. Monochrome mode generates version 2 and requires full-page registration.
 
 # Prototype physical language, version 2
 

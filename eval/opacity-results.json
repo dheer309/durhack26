@@ -1,0 +1,170 @@
+{
+  "samples_per_condition": 5,
+  "source": "Text-heavy A4 PDF rendered at144dpi; controlled digital degradation only",
+  "levels": [
+    {
+      "opacity": 0.05,
+      "visibility": {
+        "changed_white_pixel_fraction": 0.0632,
+        "mean_luminance_drop_on_marks": 0.83,
+        "p95_channel_change_on_marks": 12.0
+      },
+      "outcomes": {
+        "clean": {
+          "correct": 5,
+          "rejected": 0,
+          "incorrect": 0
+        },
+        "crop": {
+          "correct": 5,
+          "rejected": 0,
+          "incorrect": 0
+        },
+        "crop_rotate_23": {
+          "correct": 5,
+          "rejected": 0,
+          "incorrect": 0
+        },
+        "perspective_crop": {
+          "correct": 5,
+          "rejected": 0,
+          "incorrect": 0
+        },
+        "jpeg_noise": {
+          "correct": 0,
+          "rejected": 5,
+          "incorrect": 0
+        },
+        "downsample_jpeg": {
+          "correct": 0,
+          "rejected": 5,
+          "incorrect": 0
+        }
+      }
+    },
+    {
+      "opacity": 0.08,
+      "visibility": {
+        "changed_white_pixel_fraction": 0.06598,
+        "mean_luminance_drop_on_marks": 1.544,
+        "p95_channel_change_on_marks": 20.0
+      },
+      "outcomes": {
+        "clean": {
+          "correct": 5,
+          "rejected": 0,
+          "incorrect": 0
+        },
+        "crop": {
+          "correct": 5,
+          "rejected": 0,
+          "incorrect": 0
+        },
+        "crop_rotate_23": {
+          "correct": 5,
+          "rejected": 0,
+          "incorrect": 0
+        },
+        "perspective_crop": {
+          "correct": 5,
+          "rejected": 0,
+          "incorrect": 0
+        },
+        "jpeg_noise": {
+          "correct": 5,
+          "rejected": 0,
+          "incorrect": 0
+        },
+        "downsample_jpeg": {
+          "correct": 0,
+          "rejected": 5,
+          "incorrect": 0
+        }
+      }
+    },
+    {
+      "opacity": 0.1,
+      "visibility": {
+        "changed_white_pixel_fraction": 0.06664,
+        "mean_luminance_drop_on_marks": 2.157,
+        "p95_channel_change_on_marks": 25.0
+      },
+      "outcomes": {
+        "clean": {
+          "correct": 5,
+          "rejected": 0,
+          "incorrect": 0
+        },
+        "crop": {
+          "correct": 5,
+          "rejected": 0,
+          "incorrect": 0
+        },
+        "crop_rotate_23": {
+          "correct": 5,
+          "rejected": 0,
+          "incorrect": 0
+        },
+        "perspective_crop": {
+          "correct": 5,
+          "rejected": 0,
+          "incorrect": 0
+        },
+        "jpeg_noise": {
+          "correct": 5,
+          "rejected": 0,
+          "incorrect": 0
+        },
+        "downsample_jpeg": {
+          "correct": 5,
+          "rejected": 0,
+          "incorrect": 0
+        }
+      }
+    },
+    {
+      "opacity": 0.15,
+      "visibility": {
+        "changed_white_pixel_fraction": 0.06922,
+        "mean_luminance_drop_on_marks": 2.948,
+        "p95_channel_change_on_marks": 38.0
+      },
+      "outcomes": {
+        "clean": {
+          "correct": 5,
+          "rejected": 0,
+          "incorrect": 0
+        },
+        "crop": {
+          "correct": 5,
+          "rejected": 0,
+          "incorrect": 0
+        },
+        "crop_rotate_23": {
+          "correct": 5,
+          "rejected": 0,
+          "incorrect": 0
+        },
+        "perspective_crop": {
+          "correct": 5,
+          "rejected": 0,
+          "incorrect": 0
+        },
+        "jpeg_noise": {
+          "correct": 5,
+          "rejected": 0,
+          "incorrect": 0
+        },
+        "downsample_jpeg": {
+          "correct": 5,
+          "rejected": 0,
+          "incorrect": 0
+        }
+      }
+    }
+  ],
+  "unmarked_controls": {
+    "rejected": 18,
+    "incorrect": 0
+  }
+}

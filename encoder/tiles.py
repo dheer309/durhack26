@@ -5,7 +5,7 @@ import pymupdf
 from reedsolo import RSCodec
 
 from config import (TILE_COLS, TILE_ROWS, TILE_ECC_BYTES, TILE_SEED, TILE_REGISTRATION_RGB,
-                    TILE_REGISTRATION_WIDTH, TILE_DOT_RADIUS, TILE_DOT_OPACITY, TILE_PAIR_OFFSET)
+                    TILE_REGISTRATION_WIDTH, TILE_DOT_RADIUS, TILE_DOT_OPACITY, TILE_PAIR_OFFSET, TILE_DOT_RGB, TILE_REGISTRATION_OPACITY)
 
 def tile_points():
     rng = random.Random(TILE_SEED)
@@ -25,7 +25,7 @@ def add_tiles(page, identifier):
             tw, th = .30*width, .22*height
             # Registration boundary permits a crop to be rectified independently.
             shape.draw_rect(pymupdf.Rect(x0,y0,x0+tw,y0+th)*inverse)
-    shape.finish(color=TILE_REGISTRATION_RGB, width=TILE_REGISTRATION_WIDTH, stroke_opacity=1)
+    shape.finish(color=TILE_REGISTRATION_RGB, width=TILE_REGISTRATION_WIDTH, stroke_opacity=TILE_REGISTRATION_OPACITY)
     shape.commit(overlay=True)
     shape = page.new_shape()
     for row in range(TILE_ROWS):
@@ -35,5 +35,5 @@ def add_tiles(page, identifier):
             for (x,y),bit in zip(tile_points(),bits):
                 p=pymupdf.Point(x0+(x+(TILE_PAIR_OFFSET if bit else -TILE_PAIR_OFFSET))*tw,y0+y*th)*inverse
                 shape.draw_circle(p, tw*TILE_DOT_RADIUS)
-    shape.finish(color=None,fill=(.35,)*3,fill_opacity=TILE_DOT_OPACITY)
+    shape.finish(color=None,fill=TILE_DOT_RGB,fill_opacity=TILE_DOT_OPACITY)
     shape.commit(overlay=True)
