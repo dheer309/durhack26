@@ -1,0 +1,5 @@
+# Synthetic evaluation
+
+Run `python -m eval.synthetic --samples 10` from the repository root. The script creates a text-heavy, single-page A4 PDF, watermarks it for deterministic IDs, renders at 144 dpi, applies each transformation, then records correct IDs, explicit rejections, and incorrect IDs. It also checks transformed unmarked documents and blank images for false detections. It saves a JSON report and an SVG plot here. JPEG quality is 80; blur is Gaussian sigma 0.8 px; occlusion covers 5% of the page; perspective puts the page on a dark simulated background. `phone_combined` adds perspective, Gaussian blur (sigma 0.45 px), light noise (standard deviation 1), and JPEG quality 80.
+
+These are synthetic, controlled examples, not a measurement of print-and-phone performance. Lighting, paper, printer toner, camera sharpening, lens distortion, and real document content can change results substantially. A rejected scan is counted separately from an incorrect match. Physical validation requires a real printer and phone.

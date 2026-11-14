@@ -1,25 +1,78 @@
 import os
+import re
 import secrets
 import sqlite3
+from contextlib import contextmanager
 from datetime import datetime, timezone
-from pathlib import Path
-from flask import Flask, render_template, request, send_file, jsonify
 from io import BytesIO
-from encoder.watermark import make_pdf, body_fits
+from pathlib import Path
+
+import pymupdf
+from flask import Flask, jsonify, render_template, request, send_file
+from werkzeug.utils import secure_filename
+
+from encoder.watermark import watermark_pdf
 from decoder.watermark import decode
 
 ROOT = Path(__file__).resolve().parent.parent
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024
 DB = Path(os.environ.get('TRACE_DB', ROOT / 'instance' / 'trace.db'))
+MAX_PAGES = 50
 
 
+@contextmanager
 def db():
     DB.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(DB)
+    conn = sqlite3.connect(DB, timeout=10)
     conn.row_factory = sqlite3.Row
-    conn.execute('CREATE TABLE IF NOT EXISTS recipients (id INTEGER PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL, title TEXT NOT NULL, created TEXT NOT NULL)')
-    return conn
+    try:
+        conn.execute('CREATE TABLE IF NOT EXISTS recipients (id INTEGER PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL, title TEXT NOT NULL, created TEXT NOT NULL)')
+        yield conn
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def validate_pdf(data):
+    if not data:
+        raise ValueError('The PDF is empty. Choose a PDF with at least one page.')
+    try:
+        document = pymupdf.open(stream=data, filetype='pdf')
+    except Exception as exc:
+        raise ValueError('Could not read this PDF. Choose a valid, unencrypted PDF.') from exc
+    try:
+        if not document.is_pdf:
+            raise ValueError('Choose a PDF document.')
+        if document.needs_pass or document.is_encrypted:
+            raise ValueError('This PDF is password protected. Unlock it before uploading.')
+        if document.page_count == 0:
+            raise ValueError('The PDF has no pages. Choose a PDF with at least one page.')
+        if document.page_count > MAX_PAGES:
+            raise ValueError(f'This PDF has too many pages. Choose a PDF with at most {MAX_PAGES} pages.')
+    finally:
+        document.close()
+
+
+def verify_pdf(pdf_bytes, identifier):
+    """Reject copies whose marks cannot be recovered from a clean page render."""
+    doc = pymupdf.open(stream=pdf_bytes, filetype='pdf')
+    try:
+        for index, page in enumerate(doc):
+            # Bound the render size even for very large PDF page dimensions.
+            scale = 1600 / max(page.rect.width, page.rect.height)
+            try:
+                image = page.get_pixmap(matrix=pymupdf.Matrix(scale, scale), alpha=False).tobytes('png')
+                recovered, _, _ = decode(image)
+            except (ValueError, RuntimeError) as exc:
+                raise ValueError(f'Could not reliably watermark page {index + 1}. Its background or content may obscure the marks. Try a lighter or simpler PDF.') from exc
+            if recovered != identifier:
+                raise ValueError(f'Could not reliably watermark page {index + 1}. Its background or content may obscure the marks. Try a lighter or simpler PDF.')
+    finally:
+        doc.close()
 
 
 @app.get('/')
@@ -33,22 +86,37 @@ def index():
 def generate():
     name = request.form.get('name', '').strip()
     email = request.form.get('email', '').strip()
-    title = request.form.get('title', '').strip()
-    body = request.form.get('body', '').strip()
-    if not name or not email or not title or not body:
-        return jsonify(error='Complete all fields before generating a document.'), 400
-    if len(name) > 100 or len(email) > 254 or len(title) > 42 or len(body) > 2400:
-        return jsonify(error='One of the fields is too long. Shorten it and try again.'), 400
-    if not body_fits(body):
-        return jsonify(error='Document content does not fit on one page. Shorten it and try again.'), 400
-    with db() as conn:
-        while True:
-            identifier = secrets.randbits(32)
-            if not conn.execute('SELECT 1 FROM recipients WHERE id = ?', (identifier,)).fetchone():
-                break
-        pdf = make_pdf(identifier, title, body)
-        conn.execute('INSERT INTO recipients VALUES (?, ?, ?, ?, ?)', (identifier, name, email, title, datetime.now(timezone.utc).isoformat()))
-    return send_file(BytesIO(pdf), mimetype='application/pdf', as_attachment=True, download_name=f'trace-{identifier:08X}.pdf')
+    upload = request.files.get('document')
+    if not name or not email or not upload or not upload.filename:
+        return jsonify(error='Choose a PDF and enter the recipient’s name and email.'), 400
+    if len(name) > 100 or len(email) > 254:
+        return jsonify(error='The recipient name or email is too long.'), 400
+    if not re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+', email):
+        return jsonify(error='Enter a valid email address.'), 400
+    if not upload.filename.lower().endswith('.pdf'):
+        return jsonify(error='Choose a PDF document.'), 400
+    data = upload.read()
+    try:
+        validate_pdf(data)
+    except ValueError as exc:
+        return jsonify(error=str(exc)), 400
+    filename = secure_filename(upload.filename) or 'document.pdf'
+    title = Path(filename).stem[:120] or 'Document'
+    try:
+        with db() as conn:
+            # Reserve the ID under a write lock, so concurrent requests cannot
+            # accidentally generate two documents with the same recipient ID.
+            conn.execute('BEGIN IMMEDIATE')
+            while True:
+                identifier = secrets.randbits(32)
+                if not conn.execute('SELECT 1 FROM recipients WHERE id = ?', (identifier,)).fetchone():
+                    break
+            pdf = watermark_pdf(data, identifier)
+            verify_pdf(pdf, identifier)
+            conn.execute('INSERT INTO recipients VALUES (?, ?, ?, ?, ?)', (identifier, name, email, title, datetime.now(timezone.utc).isoformat()))
+    except ValueError as exc:
+        return jsonify(error=str(exc)), 422
+    return send_file(BytesIO(pdf), mimetype='application/pdf', as_attachment=True, download_name=f'{title}-trace-{identifier:08X}.pdf')
 
 
 @app.post('/decode')
@@ -69,7 +137,7 @@ def identify():
 
 @app.errorhandler(413)
 def too_large(_):
-    return jsonify(error='The file is too large. Choose an image under 20 MB.'), 413
+    return jsonify(error='The upload is too large. Choose a file under 20 MB.'), 413
 
 
 if __name__ == '__main__':

@@ -13,12 +13,12 @@ function showTab(moveFocus = false) {
 window.addEventListener('hashchange', () => showTab(true));
 showTab();
 
-const title = document.querySelector('#title');
-const body = document.querySelector('#body');
-title.addEventListener('input', () => { document.querySelector('#preview-title').textContent = title.value || 'Document title'; });
-body.addEventListener('input', () => {
-  document.querySelector('#preview-body').textContent = body.value || 'Your content will appear here.';
-  document.querySelector('#count').textContent = `${body.value.length} / 2400`;
+const documentInput = document.querySelector('#document');
+documentInput.addEventListener('change', () => {
+  const file = documentInput.files[0];
+  document.querySelector('#document-name').textContent = file?.name || 'Choose a PDF';
+  document.querySelector('#summary-name').textContent = file?.name || 'No PDF selected';
+  document.querySelector('#summary-size').textContent = file ? `${(file.size / (1024 * 1024)).toFixed(2)} MB` : 'Your original file stays on this device.';
 });
 document.querySelector('#image').addEventListener('change', event => {
   document.querySelector('#file-name').textContent = event.target.files[0]?.name || 'Choose a photo';
@@ -58,7 +58,7 @@ document.querySelector('#generate-form').addEventListener('submit', event => {
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 60000);
     feedback.classList.add('success');
-    feedback.textContent = 'PDF generated. Change the recipient to create another copy.';
+    feedback.textContent = 'Marked PDF downloaded. Change the recipient to create another copy.';
     // Refresh the recent list without clearing the document being edited.
     try {
       const page = await fetch('/');

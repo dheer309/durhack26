@@ -1,0 +1,55 @@
+{
+  "samples_per_condition": 30,
+  "source": "Synthetic A4 text PDF, rendered at 144 dpi; transformations applied digitally.",
+  "outcomes": {
+    "clean": {
+      "correct": 30,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "jpeg_80": {
+      "correct": 30,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "blur_0.8px": {
+      "correct": 30,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "rotate_90": {
+      "correct": 30,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "rotate_180": {
+      "correct": 30,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "rotate_270": {
+      "correct": 30,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "occlusion_5pct": {
+      "correct": 30,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "perspective": {
+      "correct": 30,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "phone_combined": {
+      "correct": 30,
+      "rejected": 0,
+      "incorrect": 0
+    }
+  },
+  "unmarked_controls": {
+    "rejected": 12,
+    "incorrect": 0
+  }
+}
