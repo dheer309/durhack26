@@ -1,0 +1,70 @@
+{
+  "samples_per_condition": 10,
+  "source": "Synthetic text PDF rendered at 144 dpi; no real print/camera tests",
+  "outcomes": {
+    "full": {
+      "correct": 10,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "center_60pct": {
+      "correct": 10,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "top_half": {
+      "correct": 10,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "bottom_half": {
+      "correct": 10,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "left_half": {
+      "correct": 10,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "right_half": {
+      "correct": 10,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "rotate_90": {
+      "correct": 10,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "rotate_180": {
+      "correct": 10,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "rotate_270": {
+      "correct": 10,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "rotate_23": {
+      "correct": 10,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "crop_rotate_23": {
+      "correct": 10,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "perspective_crop": {
+      "correct": 10,
+      "rejected": 0,
+      "incorrect": 0
+    }
+  },
+  "unmarked_controls": {
+    "rejected": 12,
+    "incorrect": 0
+  }
+}

@@ -34,7 +34,7 @@ def payload_bits(identifier):
     return [int(bit) for byte in encoded for bit in f'{byte:08b}'] * REPEATS
 
 
-def watermark_pdf(pdf_bytes, identifier):
+def watermark_pdf(pdf_bytes, identifier, grayscale=False):
     """Overlay marks onto every displayed page without replacing its contents."""
     bits = payload_bits(identifier)
     try:
@@ -47,29 +47,18 @@ def watermark_pdf(pdf_bytes, identifier):
         if not len(doc):
             raise ValueError('The PDF has no pages.')
         for page in doc:
-            # PyMuPDF draws in unrotated coordinates. Convert displayed normalized
-            # positions back to page coordinates to preserve pre-rotated PDFs.
-            display = page.rect
-            inverse = page.derotation_matrix
-            width, height = display.width, display.height
-            shape = page.new_shape()
-            radius = width * DOT_RADIUS
-            for (x, y), bit in zip(positions(), bits):
-                center = pymupdf.Point((x + (PAIR_OFFSET if bit else -PAIR_OFFSET))*width, y*height) * inverse
-                shape.draw_circle(center, radius)
-            shape.finish(color=None, fill=(DOT_GREY,)*3, fill_opacity=DOT_OPACITY)
-            shape.commit(overlay=True)
-            # Four small distinct castellated marks aid human orientation checks.
-            # The decoder also tries all four orientations and validates the CRC.
-            anchors = ((.023,.023,0),(.962,.023,1),(.962,.965,2),(.023,.965,3))
-            shape = page.new_shape()
-            for ax, ay, variant in anchors:
-                for dx,dy in ((0,0),(1,0),(2,0),(0,1),(2,1),(variant % 2, 2 + variant // 2)):
-                    rect = pymupdf.Rect((ax+dx*ANCHOR_SIZE)*width,(ay+dy*ANCHOR_SIZE)*height,
-                                        (ax+(dx+.75)*ANCHOR_SIZE)*width,(ay+(dy+.75)*ANCHOR_SIZE)*height)
-                    shape.draw_rect(rect * inverse)
-            shape.finish(color=None, fill=(DOT_GREY,)*3, fill_opacity=DOT_OPACITY)
-            shape.commit(overlay=True)
+            if grayscale:
+                width,height=page.rect.width,page.rect.height
+                inverse=page.derotation_matrix
+                shape=page.new_shape()
+                for (x,y),bit in zip(positions(),bits):
+                    point=pymupdf.Point((x+(PAIR_OFFSET if bit else -PAIR_OFFSET))*width,y*height)*inverse
+                    shape.draw_circle(point,width*DOT_RADIUS)
+                shape.finish(color=None,fill=(DOT_GREY,)*3,fill_opacity=DOT_OPACITY)
+                shape.commit(overlay=True)
+            else:
+                from encoder.tiles import add_tiles
+                add_tiles(page, identifier)
         return doc.tobytes(garbage=3, deflate=True, no_new_id=True)
     except ValueError:
         raise

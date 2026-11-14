@@ -73,11 +73,20 @@ document.querySelector('#generate-form').addEventListener('submit', event => {
 document.querySelector('#decode-form').addEventListener('submit', event => {
   event.preventDefault();
   document.querySelector('#result').hidden = true;
+  document.querySelector('#scan-empty').hidden = false;
   submitForm(event.currentTarget, '/decode', document.querySelector('#decode-feedback'), 'Identifying…', async response => {
     const data = await response.json();
     for (const key of ['name', 'email', 'title']) document.querySelector(`#result-${key}`).textContent = data[key];
     document.querySelector('#result-id').textContent = data.identifier;
     document.querySelector('#result-confidence').textContent = `${data.confidence}%`;
     document.querySelector('#result').hidden = false;
+    document.querySelector('#scan-empty').hidden = true;
   });
 });
+
+for (const zone of document.querySelectorAll('.dropzone')) {
+  const input = zone.querySelector('input');
+  zone.addEventListener('dragover', event => { event.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', event => { event.preventDefault(); zone.classList.remove('dragover'); if (event.dataTransfer.files.length) { input.files = event.dataTransfer.files; input.dispatchEvent(new Event('change')); } });
+}

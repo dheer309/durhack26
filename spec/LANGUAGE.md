@@ -1,3 +1,7 @@
+# Physical language, version 3
+
+New color copies repeat the complete ID, CRC-32 and 24 Reed–Solomon parity bytes in each of 12 independent patches. Cyan rectangular registration boundaries permit local rectification without page edges; the payload uses jittered paired-dot positions. A complete readable patch is required. Tests cover crops, rotation and mild perspective, but physical printing is unverified. The visible patch boundaries are a functional tradeoff from the original organic, faint-mark brief. Monochrome mode generates version 2 and requires full-page registration.
+
 # Prototype physical language, version 2
 
 The watermark is applied to each page of an existing PDF. A 32-bit recipient ID and its CRC-32 checksum form eight bytes; eight Reed–Solomon parity bytes produce 128 bits. The payload is repeated six times across 768 seed-shuffled, slightly jittered positions. A single grey dot at one of two positions represents each bit. Coordinates are proportional to the displayed page; all shared parameters are in `config.py`. The same input PDF bytes and ID produce the same marked PDF bytes.

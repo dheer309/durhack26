@@ -121,3 +121,13 @@ def test_dark_page_rejected_without_creating_recipient(tmp_path, monkeypatch):
     assert 'page 1' in response.json['error'].lower()
     with server.db() as conn:
         assert conn.execute('SELECT COUNT(*) FROM recipients').fetchone()[0] == 0
+
+
+def test_marked_pdf_can_be_identified_directly(tmp_path, monkeypatch):
+    monkeypatch.setattr(server, 'DB', tmp_path / 'test.db')
+    client = server.app.test_client()
+    marked = client.post('/generate', data={'name': 'Alex', 'email': 'alex@example.com', 'document': (io.BytesIO(example_pdf(2)), 'brief.pdf')})
+    assert marked.status_code == 200
+    result = client.post('/decode', data={'image': (io.BytesIO(marked.data), 'marked.pdf')})
+    assert result.status_code == 200
+    assert result.json['name'] == 'Alex'

@@ -11,21 +11,21 @@ pip install -r requirements.txt
 python -m app.server
 ```
 
-Open http://localhost:5000. Upload a PDF and enter a recipient to download a marked copy; every page carries the same recipient ID. Before returning the PDF, the app checks that it can recover the ID from a clean render of every page and rejects a page that fails. Print the marked copy and upload a JPEG or PNG of the entire page under **Identify a leak**. HEIC is not supported. Keep `instance/trace.db`: IDs cannot be matched to recipients without that database. The original uploaded PDF is not stored by the application.
+Open http://localhost:5000. Upload a PDF and enter a recipient to download a marked copy; every page carries the same recipient ID. Before returning the PDF, the app checks that it can recover the ID from a clean render of every page and rejects a page that fails. Print the marked copy and upload a JPEG, PNG, or PDF under **Identify**. Any one marked page is sufficient; the color format also supports crops that retain a complete repeated patch. HEIC is not supported. Keep `instance/trace.db`: IDs cannot be matched to recipients without that database. The original uploaded PDF is not stored by the application.
 
 Uploads are limited to 20 MB per request and 50 pages. Password-protected PDFs must be unlocked first. Watermarking changes the PDF and may invalidate existing digital signatures. The decoder also supports near-upright, tightly cropped screenshots from the earlier prototype. Its older format has no checksum, so legacy decoding requires a strong signal and remains less reliable than the current format.
 
 ## Reliability and limits
 
-This is an experimental prototype, not a production security system. Physical print and phone-photo recovery has **not** been validated. Use a clear, evenly lit photograph with the whole page visible against a contrasting background. The decoder detects the page boundary and tries all four orientations; the corner marks are not yet used to detect or rectify the page. Cropping, low resolution, poor lighting, page content, printer characteristics or paper can prevent recovery. Signal agreement measures consistency of repeated marks; it is not a probability that an identification is correct.
+This is an experimental prototype, not a production security system. Physical print and phone-photo recovery has **not** been validated. The new color format repeats complete error-corrected payloads across each page with cyan registration boundaries. It can locate surviving patches without a page outline. At least one complete readable patch must remain; arbitrary tiny crops cannot be recovered. Select **Monochrome printer** for the earlier grayscale format, which requires a full-page scan. Cropping, low resolution, poor lighting, page content, printer characteristics or paper can prevent recovery. Signal agreement measures consistency of repeated marks; it is not a probability that an identification is correct.
 
-The marks are visibly darker than the earlier prototype and are approximately 0.92 mm across on A4; stealth and print robustness require real-world tuning. Retyping or recreating a document removes the marks. The prototype is not resistant to copy comparison, and its deterministic seed is public. See [the language spec](spec/LANGUAGE.md) and [synthetic evaluation](eval/README.md).
+The repeated patch boundaries and marks are visible; stealth and print robustness require real-world tuning. Retyping or recreating a document removes the marks. The prototype is not resistant to copy comparison, and its deterministic seed is public. See [the language spec](spec/LANGUAGE.md) and [synthetic evaluation](eval/README.md).
 
 ## Tests and synthetic evaluation
 
 ```sh
 python -m pytest -q
-python -m eval.synthetic --samples 30
+python -m eval.crops --samples 10
 ```
 
 The saved evaluation is a controlled digital simulation, not a claim about physical-camera performance.

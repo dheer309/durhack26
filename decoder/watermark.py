@@ -6,7 +6,7 @@ from reedsolo import RSCodec, ReedSolomonError
 from config import ECC_BYTES, REPEATS, PAIR_OFFSET, NORMAL_WIDTH, NORMAL_HEIGHT
 from encoder.watermark import positions
 
-ERROR = 'No valid watermark recovered. Use a clear photo of the entire watermarked page, or upload its PNG or JPEG render.'
+ERROR = 'No valid watermark recovered. Try a larger or sharper image that includes a complete marked patch.'
 
 
 def _ordered_corners(image):
@@ -77,7 +77,11 @@ def decode(data):
     if image.shape[0] * image.shape[1] > 40_000_000:
         raise ValueError('Image is too large. Use an image under 40 megapixels.')
     if min(image.shape[:2]) < 300:
-        raise ValueError('Image resolution is too low. Use a clearer photo of the full page.')
+        raise ValueError('Image resolution is too low. Use a higher-resolution image.')
+    from decoder.tiles import decode_tiles
+    tiled = decode_tiles(image)
+    if tiled is not None:
+        return tiled
     corners = _ordered_corners(image)
     destination = np.float32([[0,0],[NORMAL_WIDTH-1,0],[NORMAL_WIDTH-1,NORMAL_HEIGHT-1],[0,NORMAL_HEIGHT-1]])
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)

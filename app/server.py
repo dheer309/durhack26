@@ -111,12 +111,32 @@ def generate():
                 identifier = secrets.randbits(32)
                 if not conn.execute('SELECT 1 FROM recipients WHERE id = ?', (identifier,)).fetchone():
                     break
-            pdf = watermark_pdf(data, identifier)
+            pdf = watermark_pdf(data, identifier, grayscale=request.form.get("mode") == "grayscale")
             verify_pdf(pdf, identifier)
             conn.execute('INSERT INTO recipients VALUES (?, ?, ?, ?, ?)', (identifier, name, email, title, datetime.now(timezone.utc).isoformat()))
     except ValueError as exc:
         return jsonify(error=str(exc)), 422
     return send_file(BytesIO(pdf), mimetype='application/pdf', as_attachment=True, download_name=f'{title}-trace-{identifier:08X}.pdf')
+
+
+def decode_upload(data, filename):
+    if not filename.lower().endswith('.pdf') and not data.lstrip().startswith(b'%PDF-'):
+        return decode(data)
+    validate_pdf(data)
+    with pymupdf.open(stream=data, filetype='pdf') as document:
+        results = []
+        for page in document:
+            scale = 1800 / max(page.rect.width, page.rect.height)
+            image = page.get_pixmap(matrix=pymupdf.Matrix(scale, scale), alpha=False).tobytes('png')
+            try:
+                results.append(decode(image))
+            except ValueError:
+                continue
+        if not results:
+            raise ValueError('No readable watermark found in this PDF.')
+        if len({result[0] for result in results}) != 1:
+            raise ValueError('This PDF contains different recipient codes. Upload one page at a time.')
+        return max(results, key=lambda result: result[1])
 
 
 @app.post('/decode')
@@ -125,7 +145,7 @@ def identify():
     if not upload or not upload.filename:
         return jsonify(error='Choose a photo of a watermarked page first.'), 400
     try:
-        identifier, confidence, corrected = decode(upload.read())
+        identifier, confidence, corrected = decode_upload(upload.read(), upload.filename)
     except ValueError as exc:
         return jsonify(error=str(exc)), 422
     with db() as conn:
