@@ -87,4 +87,10 @@ def decode(data):
         result = _try_page(page)
         if result is not None:
             return result
+    # The first prototype used a different format with no checksum.
+    # Only its strongly corroborated lattice candidates are accepted.
+    from decoder.legacy import decode_legacy
+    legacy = decode_legacy(image)
+    if legacy is not None:
+        return legacy
     raise ValueError(ERROR)
