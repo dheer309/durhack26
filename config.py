@@ -1,0 +1,9 @@
+"""Shared physical watermark parameters, in A4 points."""
+PAGE_WIDTH, PAGE_HEIGHT = 595.2756, 841.8898
+COLS, ROWS = 24, 16
+MARGIN_X, MARGIN_Y = 42, 55
+ECC_BYTES = 8
+REPEATS = 4
+DOT_RADIUS = 1.35
+DOT_GREY = 0.70
+SEED = 26014
