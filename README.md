@@ -1,6 +1,6 @@
 # Trace
 
-Trace adds recipient-specific watermarks to existing PDFs and attempts to identify a recipient from a photo of a marked page. Recipient records are stored in a local SQLite database.
+Trace adds recipient-specific watermarks to existing PDFs and attempts to identify a recipient from a photo of a marked page. Recipient records use local SQLite by default or MongoDB Atlas when configured.
 
 ## Run
 
@@ -14,6 +14,14 @@ python -m app.server
 Open http://localhost:5000. Upload a PDF and enter a recipient to download a marked copy; every page carries the same recipient ID. Before returning the PDF, the app checks that it can recover the ID from a clean render of every page and rejects a page that fails. Print the marked copy and upload a JPEG, PNG, HEIC, HEIF, or PDF under **Identify**. Any one marked page is sufficient; the color format also supports crops that retain a complete repeated patch. Keep `instance/trace.db`: IDs cannot be matched to recipients without that database. The original uploaded PDF is not stored by the application.
 
 Uploads are limited to 20 MB per request and 50 pages. Password-protected PDFs must be unlocked first. Watermarking changes the PDF and may invalidate existing digital signatures. The decoder also supports near-upright, tightly cropped screenshots from the earlier prototype. Its older format has no checksum, so legacy decoding requires a strong signal and remains less reliable than the current format.
+
+## MongoDB Atlas (optional)
+
+Create an Atlas cluster, database user and network access entry following the [Atlas connection guide](https://www.mongodb.com/docs/atlas/driver-connection/). Set `MONGODB_URI` to the connection string in your environment and optionally set `MONGODB_DATABASE` (default `trace`), then start the app. Never commit the URI or credentials. Unset `MONGODB_URI` to use local SQLite instead.
+
+In Atlas mode, recipient records and IDs are stored in the `recipients` collection; `_id` is the 32-bit watermark ID. Sparse alignment features stay in the local `instance/trace.db`, so photo alignment is not automatically shared across machines. Existing SQLite recipients are not automatically migrated. An Atlas connection failure returns an error rather than silently storing new records locally. A shared demo should use synthetic recipient data and restrict access to the database.
+
+For development tests, install `requirements-dev.txt`; the Atlas tests use an in-memory MongoDB-compatible mock, not an actual Atlas cluster.
 
 ## Reliability and limits
 

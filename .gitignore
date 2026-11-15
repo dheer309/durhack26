@@ -4,3 +4,7 @@ __pycache__/
 instance/
 *.pyc
 .impeccable/review/
+
+# Local credentials
+.env
+.env.*

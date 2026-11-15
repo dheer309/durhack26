@@ -7,3 +7,4 @@ PyMuPDF>=1.24,<2
 pytest>=8,<9
 Pillow>=11,<13
 pillow-heif>=1.0,<2
+pymongo>=4.8,<5

@@ -10,6 +10,8 @@ from pathlib import Path
 import pymupdf
 from flask import Flask, jsonify, render_template, request, send_file
 from werkzeug.utils import secure_filename
+from pymongo.errors import PyMongoError
+from app import atlas
 
 from encoder.watermark import watermark_pdf
 from decoder.watermark import decode
@@ -80,8 +82,12 @@ def verify_pdf(pdf_bytes, identifier):
 
 @app.get('/')
 def index():
-    with db() as conn:
-        recipients = conn.execute('SELECT * FROM recipients ORDER BY created DESC LIMIT 8').fetchall()
+    store = atlas.active_collection()
+    if store is not None:
+        recipients = atlas.recent(store)
+    else:
+        with db() as conn:
+            recipients = conn.execute('SELECT * FROM recipients ORDER BY created DESC LIMIT 8').fetchall()
     return render_template('index.html', recipients=recipients)
 
 
@@ -106,19 +112,33 @@ def generate():
     filename = secure_filename(upload.filename) or 'document.pdf'
     title = Path(filename).stem[:120] or 'Document'
     try:
-        with db() as conn:
-            # Reserve the ID under a write lock, so concurrent requests cannot
-            # accidentally generate two documents with the same recipient ID.
-            conn.execute('BEGIN IMMEDIATE')
-            while True:
+        store = atlas.active_collection()
+        if store is None:
+            with db() as conn:
+                conn.execute('BEGIN IMMEDIATE')
+                while True:
+                    identifier = secrets.randbits(32)
+                    if not conn.execute('SELECT 1 FROM recipients WHERE id = ?', (identifier,)).fetchone():
+                        break
+                pdf = watermark_pdf(data, identifier, grayscale=request.form.get('mode') == 'grayscale')
+                verify_pdf(pdf, identifier)
+                digest, features = pack_reference(pdf)
+                conn.execute('INSERT OR IGNORE INTO document_references VALUES (?, ?)', (digest, features))
+                conn.execute('INSERT INTO recipients VALUES (?, ?, ?, ?, ?)', (identifier, name, email, title, datetime.now(timezone.utc).isoformat()))
+        else:
+            # _id is unique in MongoDB. On the exceedingly rare collision,
+            # regenerate the PDF so the marks agree with the reserved ID.
+            for _ in range(5):
                 identifier = secrets.randbits(32)
-                if not conn.execute('SELECT 1 FROM recipients WHERE id = ?', (identifier,)).fetchone():
+                pdf = watermark_pdf(data, identifier, grayscale=request.form.get('mode') == 'grayscale')
+                verify_pdf(pdf, identifier)
+                digest, features = pack_reference(pdf)
+                with db() as conn:
+                    conn.execute('INSERT OR IGNORE INTO document_references VALUES (?, ?)', (digest, features))
+                if atlas.insert(store, identifier, name, email, title, datetime.now(timezone.utc).isoformat()):
                     break
-            pdf = watermark_pdf(data, identifier, grayscale=request.form.get("mode") == "grayscale")
-            verify_pdf(pdf, identifier)
-            digest, features = pack_reference(pdf)
-            conn.execute("INSERT OR IGNORE INTO document_references VALUES (?, ?)", (digest, features))
-            conn.execute('INSERT INTO recipients VALUES (?, ?, ?, ?, ?)', (identifier, name, email, title, datetime.now(timezone.utc).isoformat()))
+            else:
+                raise ValueError('Could not create a unique recipient ID. Please try again.')
     except ValueError as exc:
         return jsonify(error=str(exc)), 422
     return send_file(BytesIO(pdf), mimetype='application/pdf', as_attachment=True, download_name=f'{title}-trace-{identifier:08X}.pdf')
@@ -167,11 +187,20 @@ def identify():
         identifier, confidence, corrected = decode_upload(upload.read(), upload.filename)
     except ValueError as exc:
         return jsonify(error=str(exc)), 422
-    with db() as conn:
-        person = conn.execute('SELECT * FROM recipients WHERE id = ?', (identifier,)).fetchone()
+    store = atlas.active_collection()
+    if store is not None:
+        person = atlas.find(store, identifier)
+    else:
+        with db() as conn:
+            person = conn.execute('SELECT * FROM recipients WHERE id = ?', (identifier,)).fetchone()
     if not person:
         return jsonify(error='A valid code was found, but its recipient is not in this database.'), 404
     return jsonify(name=person['name'], email=person['email'], title=person['title'], identifier=f'{identifier:08X}', confidence=round(confidence * 100), corrected=corrected)
+
+
+@app.errorhandler(PyMongoError)
+def atlas_unavailable(_):
+    return jsonify(error='Cannot reach the recipient database. Check your connection and try again.'), 503
 
 
 @app.errorhandler(413)

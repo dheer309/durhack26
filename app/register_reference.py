@@ -3,6 +3,7 @@ import argparse
 from pathlib import Path
 import pymupdf
 from app.server import db
+from app import atlas
 from app.references import pack_reference
 from decoder.watermark import decode
 
@@ -14,8 +15,10 @@ def register(path):
         scale = 1800 / max(page.rect.width, page.rect.height)
         identifier, _, _ = decode(page.get_pixmap(matrix=pymupdf.Matrix(scale, scale), alpha=False).tobytes('png'))
     digest, payload = pack_reference(data)
+    store = atlas.active_collection()
     with db() as connection:
-        if not connection.execute('SELECT 1 FROM recipients WHERE id = ?', (identifier,)).fetchone():
+        exists = atlas.find(store, identifier) if store is not None else connection.execute('SELECT 1 FROM recipients WHERE id = ?', (identifier,)).fetchone()
+        if not exists:
             raise ValueError('This PDF has no recipient record in this workspace.')
         connection.execute('INSERT OR IGNORE INTO document_references VALUES (?, ?)', (digest, payload))
 
