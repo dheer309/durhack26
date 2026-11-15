@@ -1,1 +1,260 @@
-{"schemaVersion":1,"tokens":{"color":{"background":"#f7f7f3","surface":"#ffffff","secondarySurface":"#edf0ed","text":"#202b33","muted":"#657078","accent":"#d66d46","primary":"#253c47","border":"#dce1df"},"typography":{"family":"DM Sans","body":14,"heading":38},"radius":{"field":6,"workspace":14},"layout":{"maxWidth":1240,"mobileGutter":20}},"sourceFiles":["app/templates/index.html","app/static/style.css","app/static/app.js"]}
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-15T09:59:08.843898+00:00",
+  "title": "Design System: dotcrypt",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "neutral",
+        "displayName": "Deep ink",
+        "canonical": "#202b33",
+        "tonalRamp": [
+          "#21272c",
+          "#334551",
+          "#496274",
+          "#5e7f96",
+          "#7f9aae",
+          "#a1b5c4",
+          "#c7d3dc",
+          "#f0f3f4"
+        ]
+      },
+      "primary": {
+        "role": "primary",
+        "displayName": "Primary ink",
+        "canonical": "#253c47",
+        "tonalRamp": [
+          "#1f292d",
+          "#2d4a57",
+          "#41697c",
+          "#5488a1",
+          "#76a2b7",
+          "#9abbcb",
+          "#c3d6e0",
+          "#f0f3f5"
+        ]
+      },
+      "primary-hover": {
+        "role": "neutral",
+        "displayName": "Primary hover",
+        "canonical": "#375661",
+        "tonalRamp": [
+          "#20292d",
+          "#304b55",
+          "#446b78",
+          "#598b9c",
+          "#7aa4b3",
+          "#9dbdc8",
+          "#c4d7de",
+          "#f0f3f4"
+        ]
+      },
+      "terracotta": {
+        "role": "primary",
+        "displayName": "Warm terracotta",
+        "canonical": "#d66d46",
+        "tonalRamp": [
+          "#352018",
+          "#6d2f18",
+          "#9a4322",
+          "#c8572c",
+          "#d97854",
+          "#e39c82",
+          "#eec4b4",
+          "#f7f0ed"
+        ]
+      },
+      "focus": {
+        "role": "neutral",
+        "displayName": "Focus terracotta",
+        "canonical": "#cc5e34",
+        "tonalRamp": [
+          "#342019",
+          "#6a311b",
+          "#974526",
+          "#c45a31",
+          "#d57a58",
+          "#e09e85",
+          "#edc5b6",
+          "#f7f0ee"
+        ]
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Warm off-white",
+        "canonical": "#f7f7f3",
+        "tonalRamp": [
+          "#2b2b22",
+          "#505035",
+          "#71714b",
+          "#939362",
+          "#abab82",
+          "#c2c2a3",
+          "#dadac8",
+          "#f4f4f1"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "White surface",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#262626",
+          "#424242",
+          "#5e5e5e",
+          "#7a7a7a",
+          "#969696",
+          "#b2b2b2",
+          "#d1d1d1",
+          "#f2f2f2"
+        ]
+      },
+      "secondary-surface": {
+        "role": "neutral",
+        "displayName": "Pale green-gray",
+        "canonical": "#edf0ed",
+        "tonalRamp": [
+          "#242824",
+          "#3c483c",
+          "#566756",
+          "#6f866f",
+          "#8da08d",
+          "#acb9ac",
+          "#cdd5cd",
+          "#f2f3f2"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted ink",
+        "canonical": "#657078",
+        "tonalRamp": [
+          "#242728",
+          "#3d4348",
+          "#566066",
+          "#707c85",
+          "#8d989f",
+          "#acb4b9",
+          "#cdd2d5",
+          "#f2f2f3"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Light border",
+        "canonical": "#dce1df",
+        "tonalRamp": [
+          "#242827",
+          "#3d4743",
+          "#576660",
+          "#71847c",
+          "#8e9e98",
+          "#adb8b4",
+          "#ced5d2",
+          "#f2f3f2"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "heading": {
+        "displayName": "Heading",
+        "purpose": "Page headings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Interface copy."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Form labels and supporting details."
+      }
+    },
+    "shadows": [
+      {
+        "name": "document-preview",
+        "value": "0 7px 22px #1d3b4210",
+        "purpose": "Separates the document preview from its panel."
+      }
+    ],
+    "motion": [
+      {
+        "name": "control-transition",
+        "value": "background .18s",
+        "purpose": "Primary action hover feedback."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide",
+        "value": "1300px"
+      },
+      {
+        "name": "medium",
+        "value": "850px"
+      },
+      {
+        "name": "small",
+        "value": "600px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main action for watermarking or identifying.",
+      "html": "<button class=\"ds-primary\">Watermark &amp; download</button>",
+      "css": ".ds-primary{font:600 13px DM Sans,sans-serif;background:#253c47;color:#fff;border:0;border-radius:6px;min-height:46px;padding:0 20px;transition:background .18s;cursor:pointer}.ds-primary:hover{background:#375661}.ds-primary:disabled{opacity:.55;cursor:wait}.ds-primary:focus-visible{outline:3px solid #cc5e34;outline-offset:4px}"
+    },
+    {
+      "name": "Text field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Labelled recipient field.",
+      "html": "<label class=\"ds-label\">Recipient name<input class=\"ds-input\" placeholder=\"Alex Morgan\"></label>",
+      "css": ".ds-label{font:600 12px DM Sans,sans-serif;color:#202b33}.ds-input{display:block;margin-top:9px;height:46px;padding:0 13px;border:1px solid #d3dbd8;border-radius:6px;background:#fff;color:#24333c;font:14px DM Sans,sans-serif}.ds-input:focus-visible{outline:3px solid #cc5e34;outline-offset:4px}"
+    },
+    {
+      "name": "Workspace navigation",
+      "kind": "nav",
+      "description": "Two navigation links with the current task underlined.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-active\" href=\"#\">Watermark</a><a href=\"#\">Identify</a></nav>",
+      "css": ".ds-nav{display:flex;gap:32px;font:600 14px DM Sans,sans-serif}.ds-nav a{color:#627079;text-decoration:none;padding:18px 0}.ds-nav a.ds-active{color:#233640;border-bottom:3px solid #d66d46}.ds-nav a:focus-visible{outline:3px solid #cc5e34;outline-offset:4px}"
+    },
+    {
+      "name": "Document workspace",
+      "kind": "card",
+      "refersTo": "workspace",
+      "description": "Bordered task surface with a tonal document panel.",
+      "html": "<div class=\"ds-workspace\"><div class=\"ds-form\">Choose your document</div><div class=\"ds-panel\">Your document</div></div>",
+      "css": ".ds-workspace{display:flex;overflow:hidden;border:1px solid #dce1df;border-radius:14px;background:#fff;font:600 14px DM Sans,sans-serif;color:#202b33}.ds-form{padding:32px;flex:1}.ds-panel{padding:28px;background:#edf0ed;border-left:1px solid #dce1df}"
+    },
+    {
+      "name": "File drop zone",
+      "kind": "custom",
+      "description": "Dashed file-selection area with hover feedback.",
+      "html": "<label class=\"ds-drop\">Select a PDF<input type=\"file\" aria-label=\"Select a PDF\"></label>",
+      "css": ".ds-drop{display:flex;align-items:center;justify-content:center;min-height:120px;padding:20px;border:1px dashed #b9c2c1;border-radius:9px;background:#fafbf9;color:#202b33;font:600 14px DM Sans,sans-serif;cursor:pointer}.ds-drop:hover{background:#f5f1e9;border-color:#b16a4e}.ds-drop:focus-within{outline:3px solid #cc5e34;outline-offset:3px}.ds-drop input{position:absolute;width:1px;height:1px;clip-path:inset(50%)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "A precise document workspace",
+    "overview": "The interface is technical and precise, with crisp, tactile controls. Deep ink, warm white surfaces, and restrained terracotta accents support a clear workspace for watermarking and identification.",
+    "keyCharacteristics": [
+      "Two focused tasks with a shared top navigation.",
+      "Clear labels, direct actions, and feedback next to each workflow.",
+      "Flat, bordered surfaces with restrained depth."
+    ],
+    "rules": [],
+    "dos": [
+      "Do keep labels, feedback, and keyboard focus visible.",
+      "Do use the existing navy, warm white, and terracotta palette.",
+      "Do preserve the lowercase wordmark and square brand mark."
+    ],
+    "donts": [
+      "Don't introduce unverified claims about physical watermark reliability.",
+      "Don't change the existing layout or palette as part of a naming-only update."
+    ]
+  }
+}

@@ -54,7 +54,7 @@ document.querySelector('#generate-form').addEventListener('submit', event => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = response.headers.get('Content-Disposition')?.match(/filename="?([^";]+)/)?.[1] || 'trace.pdf';
+    link.download = (response.headers.get('Content-Disposition')?.match(/filename="?([^";]+)/)?.[1] || 'dotcrypt.pdf').replace(/-trace-([0-9A-F]{8}\.pdf)$/i, '-dotcrypt-$1');
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 60000);
     feedback.classList.add('success');

@@ -1,6 +1,6 @@
-# Trace
+# dotcrypt
 
-Trace adds recipient-specific watermarks to existing PDFs and attempts to identify a recipient from a photo of a marked page. Recipient records use local SQLite by default or MongoDB Atlas when configured.
+dotcrypt adds recipient-specific watermarks to existing PDFs and attempts to identify a recipient from a photo of a marked page. Recipient records use local SQLite by default or MongoDB Atlas when configured.
 
 ## Run
 
