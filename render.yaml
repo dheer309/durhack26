@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: trace-watermark
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --timeout 120 app.server:app
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DATABASE
+        value: trace
+      - key: PYTHON_VERSION
+        value: 3.12.8

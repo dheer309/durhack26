@@ -133,8 +133,7 @@ def generate():
                 pdf = watermark_pdf(data, identifier, grayscale=request.form.get('mode') == 'grayscale')
                 verify_pdf(pdf, identifier)
                 digest, features = pack_reference(pdf)
-                with db() as conn:
-                    conn.execute('INSERT OR IGNORE INTO document_references VALUES (?, ?)', (digest, features))
+                atlas.save_reference(store, digest, features)
                 if atlas.insert(store, identifier, name, email, title, datetime.now(timezone.utc).isoformat()):
                     break
             else:
@@ -148,9 +147,13 @@ def identify_image(data):
     try:
         return decode(data)
     except ValueError as original_error:
-        with db() as conn:
-            rows = conn.execute("SELECT payload FROM document_references").fetchall()
-        references = [ref for row in rows for ref in unpack_reference(row["payload"])]
+        store = atlas.active_collection()
+        if store is not None:
+            payloads = atlas.references(store)
+        else:
+            with db() as conn:
+                payloads = [row["payload"] for row in conn.execute("SELECT payload FROM document_references").fetchall()]
+        references = [ref for payload in payloads for ref in unpack_reference(payload)]
         if references:
             result = decode_with_references(data, references)
             if result is not None:

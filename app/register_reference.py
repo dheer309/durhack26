@@ -16,11 +16,15 @@ def register(path):
         identifier, _, _ = decode(page.get_pixmap(matrix=pymupdf.Matrix(scale, scale), alpha=False).tobytes('png'))
     digest, payload = pack_reference(data)
     store = atlas.active_collection()
-    with db() as connection:
-        exists = atlas.find(store, identifier) if store is not None else connection.execute('SELECT 1 FROM recipients WHERE id = ?', (identifier,)).fetchone()
-        if not exists:
+    if store is not None:
+        if not atlas.find(store, identifier):
             raise ValueError('This PDF has no recipient record in this workspace.')
-        connection.execute('INSERT OR IGNORE INTO document_references VALUES (?, ?)', (digest, payload))
+        atlas.save_reference(store, digest, payload)
+    else:
+        with db() as connection:
+            if not connection.execute('SELECT 1 FROM recipients WHERE id = ?', (identifier,)).fetchone():
+                raise ValueError('This PDF has no recipient record in this workspace.')
+            connection.execute('INSERT OR IGNORE INTO document_references VALUES (?, ?)', (digest, payload))
 
 
 if __name__ == '__main__':

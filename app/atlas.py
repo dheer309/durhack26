@@ -30,3 +30,17 @@ def insert(store, identifier, name, email, title, created):
         return True
     except DuplicateKeyError:
         return False
+
+
+def save_reference(store, digest, payload):
+    """Store large feature archives in GridFS so they survive host restarts."""
+    import gridfs
+    bucket = gridfs.GridFS(store.database, collection='alignment')
+    if not bucket.exists({'filename': digest}):
+        bucket.put(payload, filename=digest)
+
+
+def references(store):
+    import gridfs
+    bucket = gridfs.GridFS(store.database, collection='alignment')
+    return [item.read() for item in bucket.find({})]
