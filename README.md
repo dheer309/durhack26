@@ -11,7 +11,7 @@ pip install -r requirements.txt
 python -m app.server
 ```
 
-Open http://localhost:5000. Upload a PDF and enter a recipient to download a marked copy; every page carries the same recipient ID. Before returning the PDF, the app checks that it can recover the ID from a clean render of every page and rejects a page that fails. Print the marked copy and upload a JPEG, PNG, or PDF under **Identify**. Any one marked page is sufficient; the color format also supports crops that retain a complete repeated patch. HEIC is not supported. Keep `instance/trace.db`: IDs cannot be matched to recipients without that database. The original uploaded PDF is not stored by the application.
+Open http://localhost:5000. Upload a PDF and enter a recipient to download a marked copy; every page carries the same recipient ID. Before returning the PDF, the app checks that it can recover the ID from a clean render of every page and rejects a page that fails. Print the marked copy and upload a JPEG, PNG, HEIC, HEIF, or PDF under **Identify**. Any one marked page is sufficient; the color format also supports crops that retain a complete repeated patch. Keep `instance/trace.db`: IDs cannot be matched to recipients without that database. The original uploaded PDF is not stored by the application.
 
 Uploads are limited to 20 MB per request and 50 pages. Password-protected PDFs must be unlocked first. Watermarking changes the PDF and may invalidate existing digital signatures. The decoder also supports near-upright, tightly cropped screenshots from the earlier prototype. Its older format has no checksum, so legacy decoding requires a strong signal and remains less reliable than the current format.
 

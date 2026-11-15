@@ -1,10 +1,19 @@
 """Recover a checksummed repeated watermark from a photograph of a full page."""
+import io
+import warnings
 import zlib
 import cv2
 import numpy as np
+from PIL import Image, ImageOps
+from pillow_heif import get_file_mimetype, register_heif_opener
 from reedsolo import RSCodec, ReedSolomonError
 from config import ECC_BYTES, REPEATS, PAIR_OFFSET, NORMAL_WIDTH, NORMAL_HEIGHT
 from encoder.watermark import positions
+
+register_heif_opener()
+
+MAX_IMAGE_PIXELS = 40_000_000
+IMAGE_READ_ERROR = 'Could not read this image. Upload a valid PNG, JPEG, HEIC or HEIF photo.'
 
 ERROR = 'No valid watermark recovered. Try a larger or sharper image that includes a complete marked patch.'
 
@@ -64,18 +73,49 @@ def _try_page(page):
     return None
 
 
-def decode(data):
-    # OpenCV applies JPEG EXIF orientation by default.
+def _load_image(data):
+    """Decode the primary phone photo without relying on its filename."""
     if not data:
-        raise ValueError('Could not read this image. Upload a PNG or JPEG; HEIC is not supported.')
+        raise ValueError(IMAGE_READ_ERROR)
+    try:
+        mimetype = get_file_mimetype(data)
+    except (ValueError, TypeError, RuntimeError):
+        mimetype = ''
+    if mimetype in ('image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence'):
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('error', Image.DecompressionBombWarning)
+                with Image.open(io.BytesIO(data), formats=['HEIF']) as photo:
+                    if photo.width * photo.height > MAX_IMAGE_PIXELS:
+                        raise ValueError('Image is too large. Use an image under 40 megapixels.')
+                    # libheif applies HEIF container transforms and normalizes
+                    # EXIF orientation; this also handles any remaining tag.
+                    upright = ImageOps.exif_transpose(photo)
+                    rgb = np.asarray(upright.convert('RGB'))
+                    return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
+        except (Image.DecompressionBombError, Image.DecompressionBombWarning) as exc:
+            raise ValueError('Image is too large. Use an image under 40 megapixels.') from exc
+        except ValueError as exc:
+            if str(exc).startswith('Image is too large.'):
+                raise
+            raise ValueError(IMAGE_READ_ERROR) from exc
+        except (OSError, RuntimeError, SyntaxError) as exc:
+            raise ValueError(IMAGE_READ_ERROR) from exc
+    # OpenCV applies JPEG EXIF orientation by default, preserving the existing
+    # PNG/JPEG path and the color-channel values used by the watermark reader.
     try:
         image = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
     except cv2.error as exc:
-        raise ValueError('Could not read this image. Upload a PNG or JPEG; HEIC is not supported.') from exc
+        raise ValueError(IMAGE_READ_ERROR) from exc
     if image is None:
-        raise ValueError('Could not read this image. Upload a PNG or JPEG; HEIC is not supported.')
-    if image.shape[0] * image.shape[1] > 40_000_000:
+        raise ValueError(IMAGE_READ_ERROR)
+    if image.shape[0] * image.shape[1] > MAX_IMAGE_PIXELS:
         raise ValueError('Image is too large. Use an image under 40 megapixels.')
+    return image
+
+
+def decode(data):
+    image = _load_image(data)
     if min(image.shape[:2]) < 300:
         raise ValueError('Image resolution is too low. Use a higher-resolution image.')
     from decoder.tiles import decode_tiles
