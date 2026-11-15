@@ -1,6 +1,6 @@
-# Trace
+# dotcrypt
 
-Trace adds recipient-specific watermarks to existing PDFs and attempts to identify a recipient from a photo of a marked page. Recipient records are stored in a local SQLite database.
+dotcrypt adds recipient-specific watermarks to existing PDFs and attempts to identify a recipient from a photo of a marked page. Recipient records are stored in a local SQLite database.
 
 ## Run
 
