@@ -13,6 +13,8 @@ from werkzeug.utils import secure_filename
 
 from encoder.watermark import watermark_pdf
 from decoder.watermark import decode
+from decoder.reference import decode_with_references
+from app.references import pack_reference, unpack_reference
 
 ROOT = Path(__file__).resolve().parent.parent
 app = Flask(__name__)
@@ -28,6 +30,7 @@ def db():
     conn.row_factory = sqlite3.Row
     try:
         conn.execute('CREATE TABLE IF NOT EXISTS recipients (id INTEGER PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL, title TEXT NOT NULL, created TEXT NOT NULL)')
+        conn.execute('CREATE TABLE IF NOT EXISTS document_references (digest TEXT PRIMARY KEY, payload BLOB NOT NULL)')
         yield conn
         conn.commit()
     except Exception:
@@ -113,15 +116,31 @@ def generate():
                     break
             pdf = watermark_pdf(data, identifier, grayscale=request.form.get("mode") == "grayscale")
             verify_pdf(pdf, identifier)
+            digest, features = pack_reference(pdf)
+            conn.execute("INSERT OR IGNORE INTO document_references VALUES (?, ?)", (digest, features))
             conn.execute('INSERT INTO recipients VALUES (?, ?, ?, ?, ?)', (identifier, name, email, title, datetime.now(timezone.utc).isoformat()))
     except ValueError as exc:
         return jsonify(error=str(exc)), 422
     return send_file(BytesIO(pdf), mimetype='application/pdf', as_attachment=True, download_name=f'{title}-trace-{identifier:08X}.pdf')
 
 
+def identify_image(data):
+    try:
+        return decode(data)
+    except ValueError as original_error:
+        with db() as conn:
+            rows = conn.execute("SELECT payload FROM document_references").fetchall()
+        references = [ref for row in rows for ref in unpack_reference(row["payload"])]
+        if references:
+            result = decode_with_references(data, references)
+            if result is not None:
+                return result
+        raise original_error
+
+
 def decode_upload(data, filename):
     if not filename.lower().endswith('.pdf') and not data.lstrip().startswith(b'%PDF-'):
-        return decode(data)
+        return identify_image(data)
     validate_pdf(data)
     with pymupdf.open(stream=data, filetype='pdf') as document:
         results = []
@@ -129,7 +148,7 @@ def decode_upload(data, filename):
             scale = 1800 / max(page.rect.width, page.rect.height)
             image = page.get_pixmap(matrix=pymupdf.Matrix(scale, scale), alpha=False).tobytes('png')
             try:
-                results.append(decode(image))
+                results.append(identify_image(image))
             except ValueError:
                 continue
         if not results:

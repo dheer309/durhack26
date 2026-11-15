@@ -29,3 +29,9 @@ python -m eval.crops --samples 10
 ```
 
 The saved evaluation is a controlled digital simulation, not a claim about physical-camera performance.
+
+## Cropped phone photos
+
+Newly generated copies store sparse SIFT page features in the local SQLite database. If marker registration fails, these features align a cropped phone photo to its document page; the decoder then reads the marks and requires Reed–Solomon correction and a valid CRC. Text similarity alone never returns a recipient. Source PDF bytes and page images are not retained. Keep the workspace database for this fallback.
+
+To add alignment features for an older issued copy already present in the recipient database, run `python -m app.register_reference /path/to/marked.pdf`. This verifies its watermark before storing features. Sparse or repetitive page content can prevent alignment.
