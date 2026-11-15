@@ -1,0 +1,36 @@
+{
+  "opacity": 0.1,
+  "samples": 5,
+  "source": "Digitally simulated screen photography; no real captured photo",
+  "outcomes": {
+    "screen_neutral": {
+      "correct": 5,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "screen_blue_cast": {
+      "correct": 5,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "screen_warm_cast": {
+      "correct": 5,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "screen_exposed": {
+      "correct": 5,
+      "rejected": 0,
+      "incorrect": 0
+    },
+    "screen_resize": {
+      "correct": 5,
+      "rejected": 0,
+      "incorrect": 0
+    }
+  },
+  "unmarked_controls": {
+    "rejected": 5,
+    "incorrect": 0
+  }
+}

@@ -22,6 +22,6 @@ At 10%, changed marks on white areas reduced mean rendered grayscale luminance b
 
 ## Low-opacity color experiment
 
-`python -m eval.opacity` sweeps 5%, 8%, 10% and 15% yellow opacity. The saved five-ID run passed all six controlled conditions at 10% and 15%; 5% failed the JPEG/noise cases and 8% failed the downsample/JPEG case. Eighteen unmarked, tinted or textured controls were rejected. The selected default is 10% for both dots and registration strokes. This is an image simulation, not evidence from a printer or phone, and it does not measure human visibility.
+`python -m eval.opacity` sweeps 5%, 8%, 10% and 15% yellow opacity. The saved five-ID run passed all six controlled conditions at 10% and 15%; 5% failed the JPEG/noise cases and 8% failed the downsample/JPEG case. Eighteen unmarked, tinted or textured controls were rejected. The demo default is 10% for both dots and registration strokes. The earlier 10% setting survived these digital tests and failed real phone photos of a screen. This sweep is not a printer test.
 
 Print `opacity-calibration.pdf` at actual size using a color printer, then photograph a page. `python -m eval.opacity --photo /path/to/photo.jpg` checks it against `opacity-calibration.json` without adding synthetic recipients to the app database. Physical tuning must use those captured images; printer toner, paper, lighting and camera processing can remove a faint signal.

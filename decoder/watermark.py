@@ -122,6 +122,11 @@ def decode(data):
     tiled = decode_tiles(image)
     if tiled is not None:
         return tiled
+    # Phone photos of a screen clip the pale border. Read the known dot grid instead.
+    from decoder.page import decode_faint_page
+    faint = decode_faint_page(image)
+    if faint is not None:
+        return faint
     corners = _ordered_corners(image)
     destination = np.float32([[0,0],[NORMAL_WIDTH-1,0],[NORMAL_WIDTH-1,NORMAL_HEIGHT-1],[0,NORMAL_HEIGHT-1]])
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
