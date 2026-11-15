@@ -23,12 +23,14 @@ Work should be easy to show against each: a written language spec, measured erro
 
 The physical language must survive: PDF -> print -> phone photo -> decode. It must not read as a QR code or barcode.
 
-Current design:
-- Four corner anchors, drawn as faint castellated blocks. Make each corner distinguishable so page orientation is unambiguous.
-- Payload carried by organic, noise-like micro-marks spread across the page, not by drawn crosses or grids. The crosses in the original sketch are a proof of concept only.
+Original design goals:
+- Four distinguishable, faint corner anchors for orientation.
+- Organic, noise-like micro-marks spread across the page, not drawn crosses or grids.
 - Redundancy: every payload bit is spread over the whole page, or the payload is repeated across the page, so a thumb, fold, or stain degrades signal instead of deleting data.
 - Reed-Solomon (reedsolo) on top of the payload.
 - Payload is a short ID (about 32 bits plus ECC). Name, email, IP, and timestamp live in a database keyed by that ID, not in the marks.
+
+Current implementation: color PDFs use repeated independently decodable pale-yellow patches with rectangular registration boundaries; monochrome mode uses the older full-page format. The rectangles are a departure from the organic-mark goal. For cropped phone photos, the app can use sparse local page features to align the photo, then independently decode and validate the watermark. Physical print-and-phone performance remains unverified. See `spec/LANGUAGE.md` before changing the format or decoder.
 
 Recommended decoding approach (confirm with the team before changing):
 - Deterministic decoding with OpenCV and NumPy: detect anchors, `cv2.warpPerspective` to flatten, then recover bits (cross-correlation against seeded PRNG patterns for the spread-spectrum variant).
@@ -64,7 +66,8 @@ Recommended decoding approach (confirm with the team before changing):
 ## Conventions
 
 - Keep everything deterministic. Seed all PRNGs. The same inputs must give the same PDF bytes.
-- Decoder must expose a confidence score and fail loudly when ECC cannot recover the payload. Never return a guessed ID.
+- Decoder must expose signal agreement and fail loudly when ECC cannot recover the payload. Never return a guessed ID; signal agreement is not a probability of identification.
+- Keep the color watermark at 10% opacity unless the user approves an increase. Preserve compatibility with previously issued formats.
 - Keep parameters (mark size, opacity, grid, ECC symbols, seed) in one config file shared by encoder and decoder.
 - Write tests for round trips: encode, simulate degradation (rotate, blur, noise, JPEG, occlusion), decode.
 - Report results with plots in `/eval`. Do not claim robustness that has not been measured.
